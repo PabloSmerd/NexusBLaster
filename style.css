@@ -1,0 +1,227 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Orbitron', monospace;
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Анимированный фон с частицами */
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+  animation: backgroundShift 10s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(1deg); }
+}
+
+/* Меню */
+#gameMenu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  transition: all 0.8s ease-in-out;
+}
+
+#gameMenu.hidden {
+  opacity: 0;
+  transform: scale(1.1);
+  pointer-events: none;
+}
+
+/* Название игры */
+.game-title {
+  font-size: 6rem;
+  font-weight: 900;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f9ca24);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+  margin-bottom: 2rem;
+  text-align: center;
+  letter-spacing: 4px;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Подзаголовок */
+.game-subtitle {
+  font-size: 1.5rem;
+  color: #a0a0a0;
+  margin-bottom: 4rem;
+  text-align: center;
+  font-weight: 400;
+  letter-spacing: 2px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Кнопки меню */
+.menu-button {
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  padding: 20px 50px;
+  font-size: 1.4rem;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  border-radius: 50px;
+  margin: 15px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.menu-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.menu-button:hover::before {
+  left: 100%;
+}
+
+.menu-button:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.6);
+  background: linear-gradient(45deg, #764ba2 0%, #667eea 100%);
+}
+
+.menu-button:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Специальная кнопка "Начать игру" */
+.start-button {
+  background: linear-gradient(45deg, #ff6b6b 0%, #ee5a24 100%);
+  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+  animation: startButtonGlow 2s ease-in-out infinite;
+}
+
+.start-button:hover {
+  background: linear-gradient(45deg, #ee5a24 0%, #ff6b6b 100%);
+  box-shadow: 0 20px 40px rgba(255, 107, 107, 0.6);
+}
+
+@keyframes startButtonGlow {
+  0%, 100% { box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4); }
+  50% { box-shadow: 0 15px 35px rgba(255, 107, 107, 0.6); }
+}
+
+/* Инструкции */
+.instructions {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Декоративные элементы */
+.decoration {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.decoration:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+.decoration:nth-child(2) { top: 60%; left: 90%; animation-delay: 2s; }
+.decoration:nth-child(3) { top: 80%; left: 20%; animation-delay: 4s; }
+.decoration:nth-child(4) { top: 30%; left: 80%; animation-delay: 1s; }
+.decoration:nth-child(5) { top: 70%; left: 60%; animation-delay: 3s; }
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px) scale(1);
+    opacity: 0.5;
+  }
+  50% { 
+    transform: translateY(-20px) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Контейнер игры */
+#gameContainer {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+#gameContainer.visible {
+  opacity: 1;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Эффект появления */
+.fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
