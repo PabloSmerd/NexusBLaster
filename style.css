@@ -14,23 +14,19 @@ body {
   color: #cfd9ff;
 }
 
-/* Космический анимированный фон */
+/* Фон с возможностью подставить картинку */
 .background {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(90, 90, 150, 0.25) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(150, 90, 255, 0.25) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(90, 200, 255, 0.2) 0%, transparent 50%);
-  animation: backgroundShift 10s ease-in-out infinite;
-}
-
-@keyframes backgroundShift {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.1) rotate(1deg); }
+  background-image: url('area.jfif'); /* Замени на путь к вашей картинке */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Если картинки нет, будет использован градиент */
+  background-color: radial-gradient(ellipse at bottom, #0d0d1a 0%, #000010 100%);
 }
 
 /* Меню */
@@ -47,6 +43,7 @@ body {
   z-index: 1000;
   backdrop-filter: blur(10px);
   transition: all 0.8s ease-in-out;
+  background: rgba(0, 0, 0, 0.3); /* Полупрозрачный оверлей для читаемости */
 }
 
 #gameMenu.hidden {
