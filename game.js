@@ -78,7 +78,7 @@ const enemyTypes = {
   super_boss: {
     name: 'Super Boss',
     texture: 'robot_super_boss',
-    hp: 75,
+    hp: 19, // Уменьшено с 75 до 19 (в 4 раза меньше)
     speed: 30,
     scale: 4,
     points: 500,
@@ -131,7 +131,7 @@ const weapons = [
   { 
     name: 'Sniper Rifle', 
     fireRate: 2000, // Increased firing rate (was 1500)
-    bulletSpeed: 1200, 
+    bulletSpeed: 2000, // Увеличено с 1200 до 2000
     bulletsPerShot: 1, 
     spread: 0, 
     unlockScore: 800, 
@@ -155,12 +155,12 @@ const weapons = [
   { 
     name: 'RPG', 
     fireRate: 3000, // Increased firing rate (was 2000)
-    bulletSpeed: 400, 
+    bulletSpeed: 500, // Увеличено с 400 до 500
     bulletsPerShot: 1, 
     spread: 0, 
     unlockScore: 1600, 
     owned: false,
-    description: 'Explosive high damage shells',
+    description: 'Massive area damage explosive shells',
     explosive: true,
     level: 1,
     maxLevel: 5
@@ -201,15 +201,15 @@ function showInstructions() {
 📈 After unlocking all weapons - stat upgrades every 500 points
 🗺️ Explore the large map!
 💥 Get 7 kills in 10 seconds for NEXUS COMBO!
-👾 Watch out for SUPER BOSS - shoots back and has 75 HP!
+👾 Watch out for SUPER BOSS - shoots back and has 19 HP!
 
 🔫 WEAPONS:
 • Pistol - starting weapon
 • Rifle - 200 points
 • Shotgun - 500 points
-• Sniper Rifle - 800 points
+• Sniper Rifle - 800 points (piercing bullets!)
 • Machine Gun - 1200 points
-• RPG - 1600 points
+• RPG - 1600 points (area damage!)
 
 Good luck in battle! 🚀`);
 }
@@ -1123,6 +1123,10 @@ function fireWeapon(weapon, targetX, targetY) {
     bullet.setScale(0.2);
     bullet.isExplosive = weapon.explosive || false;
     
+    // Добавляем информацию о типе оружия
+    bullet.weaponType = weapon.name;
+    bullet.isSniper = (weapon.name === 'Sniper Rifle');
+    
     let bulletAngle = angleToTarget;
     if (weapon.spread > 0) {
       const spreadAmount = (weapon.spread * Math.PI / 180);
@@ -1364,25 +1368,120 @@ function updateEnemyHPBar(enemy) {
 }
 
 function bulletHitsEnemy(bullet, enemy) {
-  bullet.destroy();
+  // Определяем урон в зависимости от типа оружия
+  let damage = 1; // Базовый урон
   
-  // Explosive damage for RPG (reduced)
-  let damage = 1; // Reduced base damage
+  // Увеличенный урон для снайперской винтовки
+  if (bullet.isSniper) {
+    damage = 5; // В 5 раз больше урона
+  }
+  
+  // Улучшенный взрывной урон для RPG
   if (bullet.isExplosive) {
-    damage = 2; // Reduced RPG damage (was 3)
+    damage = 6; // Увеличено в 3 раза (было 2, стало 6)
     
-    // Explosion effect
-    const explosion = gameScene.add.circle(bullet.x, bullet.y, 50, 0xff6600, 0.8);
+    // Улучшенный взрыв с большей площадью
+    const explosionRadius = 120; // Увеличено с 50 до 120
+    const explosion = gameScene.add.circle(bullet.x, bullet.y, explosionRadius, 0xff6600, 0.8);
+    
+    // Добавляем внутренний взрыв для красоты
+    const innerExplosion = gameScene.add.circle(bullet.x, bullet.y, explosionRadius * 0.6, 0xffff00, 0.6);
+    
     gameScene.tweens.add({
-      targets: explosion,
+      targets: [explosion, innerExplosion],
       scaleX: 2,
       scaleY: 2,
       alpha: 0,
-      duration: 300,
-      onComplete: () => explosion.destroy()
+      duration: 400,
+      onComplete: () => {
+        explosion.destroy();
+        innerExplosion.destroy();
+      }
+    });
+    
+    // Урон по площади - наносим урон всем врагам в радиусе взрыва
+    enemies.children.iterate(otherEnemy => {
+      if (otherEnemy && otherEnemy.active && otherEnemy !== enemy) {
+        const distance = Phaser.Math.Distance.Between(bullet.x, bullet.y, otherEnemy.x, otherEnemy.y);
+        
+        if (distance <= explosionRadius) {
+          // Урон уменьшается с расстоянием
+          const distancePercent = 1 - (distance / explosionRadius);
+          const explosionDamage = Math.ceil(damage * 0.7 * distancePercent); // 70% от основного урона
+          
+          otherEnemy.currentHP = Math.max(0, otherEnemy.currentHP - explosionDamage);
+          
+          // Визуальный эффект попадания
+          otherEnemy.setTint(0xff6600);
+          gameScene.time.delayedCall(150, () => {
+            if (otherEnemy.active) {
+              otherEnemy.clearTint();
+            }
+          });
+          
+          // Текст урона для взрыва
+          const damageText = gameScene.add.text(otherEnemy.x, otherEnemy.y - 40, '-' + explosionDamage, {
+            fontSize: '16px',
+            fill: '#ff6600',
+            fontFamily: 'Arial'
+          }).setOrigin(0.5, 0.5);
+          
+          gameScene.tweens.add({
+            targets: damageText,
+            y: damageText.y - 20,
+            alpha: 0,
+            duration: 600,
+            onComplete: () => damageText.destroy()
+          });
+          
+          updateEnemyHPBar(otherEnemy);
+          
+          // Если враг умирает от взрыва
+          if (otherEnemy.currentHP <= 0) {
+            if (otherEnemy.hpBar) otherEnemy.hpBar.destroy();
+            if (otherEnemy.hpBarBg) otherEnemy.hpBarBg.destroy();
+            
+            score += otherEnemy.points;
+            scoreText.setText('Score: ' + score);
+            
+            // Combo system
+            killCount++;
+            comboTimer = comboTimeLimit;
+            
+            if (killCount >= comboTarget) {
+              showNexusCombo();
+              killCount = 0;
+            }
+            
+            checkForWeaponUnlock();
+            
+            const pointsText = gameScene.add.text(otherEnemy.x, otherEnemy.y - 30, '+' + otherEnemy.points, {
+              fontSize: '18px',
+              fill: '#ffff00',
+              fontFamily: 'Arial'
+            }).setOrigin(0.5, 0.5);
+            
+            gameScene.tweens.add({
+              targets: pointsText,
+              y: pointsText.y - 30,
+              alpha: 0,
+              duration: 800,
+              onComplete: () => pointsText.destroy()
+            });
+            
+            otherEnemy.destroy();
+          }
+        }
+      }
     });
   }
   
+  // Пуля снайперки не уничтожается, а продолжает лететь
+  if (!bullet.isSniper) {
+    bullet.destroy();
+  }
+  
+  // Наносим урон основной цели (в которую попала пуля)
   enemy.currentHP = Math.max(0, enemy.currentHP - damage);
   
   updateEnemyHPBar(enemy);
